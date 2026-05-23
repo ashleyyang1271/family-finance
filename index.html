@@ -209,6 +209,9 @@ let accessToken=null, currentUser=null;
 
 // ── Google Identity Services ──
 window.onGoogleLibraryLoad=()=>{
+  // 先檢查是否從 OAuth redirect 回來
+  if(handleRedirectToken()) return;
+
   google.accounts.id.initialize({
     client_id: CLIENT_ID,
     callback: handleCredential,
@@ -229,19 +232,50 @@ function handleCredential(response){
 
 function getAccessToken(){
   document.getElementById('login-status').textContent='授權中...';
-  const client=google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback:(resp)=>{
-      if(resp.error){
-        document.getElementById('login-status').textContent='授權失敗，請重試';
-        return;
+  // 偵測是否為 PWA / 手機模式
+  const isPWA=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  if(isPWA){
+    // 用 redirect 模式
+    const params=new URLSearchParams({
+      client_id: CLIENT_ID,
+      redirect_uri: location.origin+location.pathname,
+      response_type: 'token',
+      scope: SCOPES,
+      state: btoa(JSON.stringify(currentUser))
+    });
+    location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
+  } else {
+    // 桌面用彈出視窗模式
+    const client=google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback:(resp)=>{
+        if(resp.error){
+          document.getElementById('login-status').textContent='授權失敗，請重試';
+          return;
+        }
+        accessToken=resp.access_token;
+        onLoginSuccess();
       }
-      accessToken=resp.access_token;
-      onLoginSuccess();
-    }
-  });
-  client.requestAccessToken();
+    });
+    client.requestAccessToken();
+  }
+}
+
+// 處理 redirect 回來後的 token
+function handleRedirectToken(){
+  const hash=new URLSearchParams(location.hash.slice(1));
+  const token=hash.get('access_token');
+  const state=hash.get('state');
+  if(token){
+    accessToken=token;
+    if(state){ try{ currentUser=JSON.parse(atob(state)); }catch(e){} }
+    // 清除網址上的 token
+    history.replaceState(null,'',location.pathname);
+    onLoginSuccess();
+    return true;
+  }
+  return false;
 }
 
 function onLoginSuccess(){
