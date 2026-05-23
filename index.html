@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>家庭財務總覽</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#513C2C;font-size:14px;}
@@ -19,7 +20,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
 .metric{background:#513C2C;border-radius:10px;padding:12px 14px;}
 .metric-label{font-size:11px;color:#d4b896;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.03em;}
 .metric-value{font-size:17px;font-weight:700;color:#ffffff;}
-.metric-value.green{color:#ffffff;}.metric-value.blue{color:#ffffff;}.metric-value.red{color:#ffffff;}
 .metric-growth{font-size:11px;margin-top:4px;color:#ffffff;}
 .growth-up{color:#ffffff;}.growth-down{color:#ffffff;}.growth-flat{color:#ffffff;}
 .section-header{font-size:13px;font-weight:700;color:#7a5c42;margin-bottom:10px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.04em;}
@@ -36,7 +36,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
 .goal-btn{height:34px;padding:0 14px;font-size:12px;border:1px solid #d4b896;border-radius:8px;background:transparent;cursor:pointer;color:#7a5c42;white-space:nowrap;font-weight:500;}
 .goal-btn:hover{background:#f0e0cc;}
 .goal-btn.save{background:#869D96;color:#fff;border-color:#869D96;}
-.goal-btn.save:hover{background:#6f8880;}
 .chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .chart-title{font-size:14px;font-weight:700;color:#513C2C;}
 .seg-ctrl{display:flex;gap:2px;background:#f0e0cc;border-radius:8px;padding:2px;}
@@ -60,18 +59,39 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
 .add-btn:hover{background:#f0e0cc;}
 .rm-btn{background:transparent;border:none;cursor:pointer;color:#c4a080;padding:4px;font-size:16px;}
 .rm-btn:hover{color:#a0522d;}
-.save-btn{background:#513C2C;color:#fff8f0;border:none;border-radius:10px;padding:12px 24px;font-size:14px;cursor:pointer;width:100%;margin-top:8px;font-weight:600;letter-spacing:0.02em;}
+.save-btn{background:#513C2C;color:#fff8f0;border:none;border-radius:10px;padding:12px 24px;font-size:14px;cursor:pointer;width:100%;margin-top:8px;font-weight:600;}
 .save-btn:hover{background:#3d2c1e;}
-.month-select-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.save-btn:disabled{background:#a08870;cursor:not-allowed;}
+.month-select-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 .month-select-row label{font-size:14px;color:#8a6a52;font-weight:500;}
 .month-select-row select{font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid #d4b896;background:#fff8f0;color:#513C2C;}
-.toast{display:none;background:#869D96;color:#fff;border-radius:10px;padding:10px 16px;font-size:14px;text-align:center;margin-top:12px;font-weight:500;}
-.loading{text-align:center;padding:40px;color:#8a6a52;font-size:14px;}
-.error{background:#fdecea;border:1px solid #f5c6c4;border-radius:10px;padding:12px 16px;color:#a0522d;font-size:13px;margin-bottom:12px;}
+.toast{display:none;border-radius:10px;padding:10px 16px;font-size:14px;text-align:center;margin-top:12px;font-weight:500;}
+.toast.success{background:#869D96;color:#fff;}
+.toast.error{background:#a0522d;color:#fff;}
+
+/* 登入畫面 */
+.login-screen{position:fixed;inset:0;background:#f5ece0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:20px;}
+.login-title{font-size:22px;font-weight:700;color:#513C2C;}
+.login-sub{font-size:14px;color:#8a6a52;}
+.login-status{font-size:13px;color:#8a6a52;margin-top:8px;}
+.user-bar{display:flex;align-items:center;justify-content:space-between;background:#fff8f0;border:1px solid #e8d8c4;border-radius:10px;padding:8px 14px;margin-bottom:12px;}
+.user-info{font-size:12px;color:#8a6a52;}
+.logout-btn{font-size:11px;padding:4px 10px;border:1px solid #d4b896;border-radius:6px;background:transparent;cursor:pointer;color:#7a5c42;}
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- 登入畫面 -->
+<div class="login-screen" id="login-screen">
+  <div class="login-title">家庭財務總覽</div>
+  <div class="login-sub">請用 Google 帳號登入</div>
+  <div id="g_id_signin"></div>
+  <div class="login-status" id="login-status"></div>
+</div>
+
+<div class="app" id="main-app" style="display:none;">
+  <div id="user-bar-wrap"></div>
+
   <div class="page active" id="page0">
     <div class="card">
       <div class="progress-header">
@@ -90,12 +110,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
     <div class="metric-row metric-row-2">
       <div class="metric">
         <div class="metric-label">存款</div>
-        <div class="metric-value green" id="m-surplus">—</div>
+        <div class="metric-value" id="m-surplus">—</div>
         <div class="metric-growth" id="m-surplus-growth"></div>
       </div>
       <div class="metric">
         <div class="metric-label">股票總市值</div>
-        <div class="metric-value blue" id="m-invest">—</div>
+        <div class="metric-value" id="m-invest">—</div>
         <div class="metric-growth" id="m-invest-growth"></div>
       </div>
     </div>
@@ -140,17 +160,16 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
       </select>
       <span style="color:#8a6a52;">年</span>
       <select id="input-mon" style="font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid #d4b896;background:#fff8f0;color:#513C2C;">
-        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5" selected>5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
       </select>
-      <span style="color:#8a6a52;">月</span>
     </div>
     <div id="form-sections"></div>
-    <button class="save-btn" onclick="saveData()">儲存本月資料</button>
+    <button class="save-btn" onclick="saveData()" id="save-btn">儲存本月資料</button>
     <div class="toast" id="toast"></div>
   </div>
 </div>
 
-<div class="bottom-nav">
+<div class="bottom-nav" id="bottom-nav" style="display:none;">
   <button class="nav-btn active" id="nav0" onclick="switchTab(0)">
     <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>首頁
   </button>
@@ -164,9 +183,11 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const API_KEY = 'AIzaSyA6qx-nbS6VvgJeNqrlY9-7-n8zO1T8eI8';
-const SHEET_ID = '1HjWo64vqHWG-RuDDVGZEf9BuSuImAPsWYO740BNDBqk';
-const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
+const CLIENT_ID='346174220725-h1cn0ruefm38n8ojf380frt99ts9k5oa.apps.googleusercontent.com';
+const API_KEY='AIzaSyA6qx-nbS6VvgJeNqrlY9-7-n8zO1T8eI8';
+const SHEET_ID='1HjWo64vqHWG-RuDDVGZEf9BuSuImAPsWYO740BNDBqk';
+const SCOPES='https://www.googleapis.com/auth/spreadsheets';
+const BASE_URL=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
 
 const MTW=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const CATS=[
@@ -182,12 +203,116 @@ const pastItems={
   unpaid:['國泰未出帳卡費','好市多未出帳','國泰日本卡費','好市多手機卡費','停車格租金']
 };
 
-let sampleData={};
-let ALL_MONTHS=[];
+let sampleData={}, ALL_MONTHS=[], charts={c1:null,c2:null}, ranges={paid:3,invest:3};
 let goalVal=parseInt(localStorage.getItem('goalVal'))||3000000;
-let charts={c1:null,c2:null};
-let ranges={paid:3,invest:3};
+let accessToken=null, currentUser=null;
 
+// ── Google Identity Services ──
+window.onGoogleLibraryLoad=()=>{
+  google.accounts.id.initialize({
+    client_id: CLIENT_ID,
+    callback: handleCredential,
+    auto_select: true
+  });
+  google.accounts.id.renderButton(
+    document.getElementById('g_id_signin'),
+    {theme:'outline', size:'large', text:'signin_with', locale:'zh-TW'}
+  );
+  google.accounts.id.prompt();
+};
+
+function handleCredential(response){
+  const payload=JSON.parse(atob(response.credential.split('.')[1]));
+  currentUser={name:payload.name, email:payload.email};
+  getAccessToken();
+}
+
+function getAccessToken(){
+  document.getElementById('login-status').textContent='授權中...';
+  const client=google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback:(resp)=>{
+      if(resp.error){
+        document.getElementById('login-status').textContent='授權失敗，請重試';
+        return;
+      }
+      accessToken=resp.access_token;
+      onLoginSuccess();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function onLoginSuccess(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  document.getElementById('bottom-nav').style.display='flex';
+  document.getElementById('user-bar-wrap').innerHTML=`
+    <div class="user-bar">
+      <div class="user-info">👤 ${currentUser.name}（${currentUser.email}）</div>
+      <button class="logout-btn" onclick="logout()">登出</button>
+    </div>`;
+  loadAllData();
+}
+
+function logout(){
+  google.accounts.id.disableAutoSelect();
+  accessToken=null; currentUser=null;
+  document.getElementById('main-app').style.display='none';
+  document.getElementById('bottom-nav').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ── 資料讀取 ──
+async function fetchSheetData(sheetName){
+  const url=`${BASE_URL}/${sheetName}?key=${API_KEY}`;
+  const res=await fetch(url);
+  if(!res.ok) throw new Error(`無法讀取 ${sheetName}`);
+  const json=await res.json();
+  const rows=json.values||[];
+  if(rows.length<2) return [];
+  const headers=rows[0];
+  return rows.slice(1).map(r=>{let o={};headers.forEach((h,i)=>o[h]=r[i]||'');return o;});
+}
+
+async function loadAllData(){
+  try{
+    const [liquid,invest,paid,unpaid]=await Promise.all([
+      fetchSheetData('liquid'),fetchSheetData('invest'),
+      fetchSheetData('paid'),fetchSheetData('unpaid')
+    ]);
+    sampleData={};
+    const process=(rows,key)=>rows.forEach(r=>{
+      let m=r.month; if(!m) return;
+      if(!sampleData[m]) sampleData[m]={liquid:[],invest:[],paid:[],unpaid:[]};
+      sampleData[m][key].push({who:r.who,item:r.item,amt:+r.amt||0});
+    });
+    process(liquid,'liquid'); process(invest,'invest');
+    process(paid,'paid'); process(unpaid,'unpaid');
+    ALL_MONTHS=Object.keys(sampleData).sort();
+    updateDetailMonthSelector();
+    refreshHomeSummary();
+    renderDetail();
+    rebuildC1(); rebuildC2();
+  }catch(e){
+    console.error(e);
+  }
+}
+
+// ── 資料寫入 ──
+async function appendToSheet(sheetName, rows){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${sheetName}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+  const values=rows.map(r=>[r.month,r.who,r.item,r.amt]);
+  const res=await fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${accessToken}`},
+    body:JSON.stringify({values})
+  });
+  if(!res.ok) throw new Error(`寫入 ${sheetName} 失敗`);
+}
+
+// ── 工具函式 ──
 function s(arr,k){return (arr||[]).reduce((a,b)=>a+(+b[k]||0),0);}
 function fmt(n){return '$'+Math.round(n).toLocaleString();}
 function mLabel(m){let p=m.split('-');return p[0]+'年'+MTW[+p[1]-1];}
@@ -195,13 +320,13 @@ function getSurplus(m){let d=sampleData[m]||{};return s(d.liquid,'amt')-s(d.unpa
 function getInvest(m){return s((sampleData[m]||{}).invest,'amt');}
 function prevMonth(m){let i=ALL_MONTHS.indexOf(m);return i>0?ALL_MONTHS[i-1]:null;}
 
-function growthTagWhite(cur,prev){
-  if(prev===null||prev===undefined)return '<span style="color:#d4b896;font-size:11px;">— 無前月資料</span>';
-  if(prev===0)return '<span style="color:#d4b896;font-size:11px;">—</span>';
+function growthTag(cur,prev){
+  if(prev===null||prev===undefined)return '<span class="growth-flat">— 無前月資料</span>';
+  if(prev===0)return '<span class="growth-flat">—</span>';
   let pct=(cur-prev)/prev*100,sign=pct>=0?'+':'';
-  let color=pct>0?'#8ecfbf':pct<0?'#e8a07a':'#d4b896';
+  let cls=pct>0?'growth-up':pct<0?'growth-down':'growth-flat';
   let arrow=pct>0?'▲':pct<0?'▼':'—';
-  return `<span style="color:${color};font-size:11px;">${arrow} ${sign}${Math.round(pct)}% 較上月</span>`;
+  return `<span class="${cls}">${arrow} ${sign}${Math.round(pct)}% 較上月</span>`;
 }
 function growthTagDark(cur,prev){
   if(prev===null||prev===undefined)return '<span style="color:#a08870;font-size:13px;font-weight:500;">— 無前月資料</span>';
@@ -211,140 +336,33 @@ function growthTagDark(cur,prev){
   let arrow=pct>0?'▲':pct<0?'▼':'—';
   return `<span style="color:${color};font-size:13px;font-weight:500;">${arrow} ${sign}${Math.round(pct)}% 較上月</span>`;
 }
-function growthTag(cur,prev){
-  if(prev===null||prev===undefined)return '<span class="growth-flat">— 無前月資料</span>';
-  if(prev===0)return '<span class="growth-flat">—</span>';
-  let pct=(cur-prev)/prev*100,sign=pct>=0?'+':'';
-  let cls=pct>0?'growth-up':pct<0?'growth-down':'growth-flat';
-  let arrow=pct>0?'▲':pct<0?'▼':'—';
-  return `<span class="${cls}">${arrow} ${sign}${Math.round(pct)}% 較上月</span>`;
-}
 
-// 從 Google Sheets 讀取資料
-async function fetchSheetData(sheetName){
-  const url=`${BASE_URL}/${sheetName}?key=${API_KEY}`;
-  const res=await fetch(url);
-  if(!res.ok) throw new Error(`無法讀取 ${sheetName}`);
-  const json=await res.json();
-  const rows=json.values||[];
-  if(rows.length<2) return [];
-  const headers=rows[0];
-  return rows.slice(1).map(r=>{
-    let obj={};
-    headers.forEach((h,i)=>obj[h]=r[i]||'');
-    return obj;
-  });
-}
-
-async function loadAllData(){
-  try {
-    const [liquid,invest,paid,unpaid]=await Promise.all([
-      fetchSheetData('liquid'),
-      fetchSheetData('invest'),
-      fetchSheetData('paid'),
-      fetchSheetData('unpaid')
-    ]);
-    sampleData={};
-    const process=(rows,key)=>{
-      rows.forEach(r=>{
-        let m=r.month;
-        if(!m) return;
-        if(!sampleData[m]) sampleData[m]={liquid:[],invest:[],paid:[],unpaid:[]};
-        sampleData[m][key].push({who:r.who,item:r.item,amt:+r.amt||0});
-      });
-    };
-    process(liquid,'liquid');
-    process(invest,'invest');
-    process(paid,'paid');
-    process(unpaid,'unpaid');
-    ALL_MONTHS=Object.keys(sampleData).sort();
-    updateMonthSelectors();
-    refreshHomeSummary();
-    renderDetail();
-    rebuildC1();
-    rebuildC2();
-  } catch(e){
-    console.error(e);
-    showError('讀取資料失敗，請確認 API 金鑰與試算表設定是否正確。');
-  }
-}
-
-// 寫入 Google Sheets
-async function appendToSheet(sheetName, rows){
-  const url=`${BASE_URL}/${sheetName}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS&key=${API_KEY}`;
-  const values=rows.map(r=>[r.month,r.who,r.item,r.amt]);
-  await fetch(url,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({values})
-  });
-}
-
-function showError(msg){
-  let el=document.createElement('div');
-  el.className='error'; el.textContent=msg;
-  document.querySelector('.app').prepend(el);
-}
-
-function getInputMonth(){
-  let y=document.getElementById('input-year').value;
-  let mo=document.getElementById('input-mon').value;
-  return y+'-'+mo.padStart(2,'0');
-}
-
-function initInputMonthSelectors(){
-  let curYear=new Date().getFullYear();
-  let curMon=new Date().getMonth()+1;
-  let yearOpts='';
-  for(let y=curYear;y<=curYear+20;y++) yearOpts+=`<option value="${y}">${y}</option>`;
-  document.getElementById('input-year').innerHTML=yearOpts;
-  let monOpts='';
-  for(let mo=1;mo<=12;mo++) monOpts+=`<option value="${mo}" ${mo===curMon?'selected':''}>${mo}</option>`;
-  document.getElementById('input-mon').innerHTML=monOpts;
-}
-
-function updateMonthSelectors(){
-  let opts=ALL_MONTHS.slice().reverse().map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
-  document.getElementById('detail-month').innerHTML=opts;
-
-  // 年份：當年到後20年
-  let curYear=new Date().getFullYear();
-  let yearOpts='';
-  for(let y=curYear;y<=curYear+20;y++) yearOpts+=`<option value="${y}">${y}</option>`;
-  document.getElementById('input-year').innerHTML=yearOpts;
-
-  // 月份：1~12月
-  let monOpts='';
-  for(let mo=1;mo<=12;mo++) monOpts+=`<option value="${mo}" ${mo===new Date().getMonth()?'selected':''}>${mo}</option>`;
-  document.getElementById('input-mon').innerHTML=monOpts;
-}
-
+// ── 首頁 ──
 function editGoal(){
   let inp=document.getElementById('goal-input');
   inp.value=goalVal; inp.type='number';
-  inp.removeAttribute('readonly');inp.classList.add('editing');inp.focus();
+  inp.removeAttribute('readonly'); inp.classList.add('editing'); inp.focus();
   document.getElementById('goal-edit-btn').style.display='none';
   document.getElementById('goal-save-btn').style.display='block';
 }
 function saveGoal(){
   let inp=document.getElementById('goal-input');
   let v=+inp.value||goalVal; goalVal=v;
-  localStorage.setItem('goalVal', v);
+  localStorage.setItem('goalVal',v);
   inp.type='text'; inp.value=v.toLocaleString();
-  inp.setAttribute('readonly','');inp.classList.remove('editing');
+  inp.setAttribute('readonly',''); inp.classList.remove('editing');
   document.getElementById('goal-edit-btn').style.display='block';
   document.getElementById('goal-save-btn').style.display='none';
   document.getElementById('target-asset').textContent=fmt(goalVal);
   refreshHomeSummary();
 }
-
 function refreshHomeSummary(){
   document.getElementById('goal-input').value=goalVal.toLocaleString();
   document.getElementById('target-asset').textContent=fmt(goalVal);
   if(!ALL_MONTHS.length) return;
   let latest=ALL_MONTHS[ALL_MONTHS.length-1], prev=prevMonth(latest);
-  let curS=getSurplus(latest),prevS=prev?getSurplus(prev):null;
-  let curI=getInvest(latest),prevI=prev?getInvest(prev):null;
+  let curS=getSurplus(latest), prevS=prev?getSurplus(prev):null;
+  let curI=getInvest(latest), prevI=prev?getInvest(prev):null;
   let pct=Math.min(100,Math.round(curS/goalVal*100));
   document.getElementById('pct-label').textContent=pct+'%';
   document.getElementById('prog-bar').style.width=pct+'%';
@@ -355,13 +373,13 @@ function refreshHomeSummary(){
   document.getElementById('m-invest-growth').innerHTML=growthTag(curI,prevI);
 }
 
+// ── 圖表 ──
 function setRange(type,n){
   ranges[type]=n;
   document.querySelectorAll('#seg-'+type+' .seg-btn').forEach((b,i)=>{b.classList.toggle('active',[3,6,12][i]===n);});
-  if(type==='paid')rebuildC1();else rebuildC2();
+  if(type==='paid')rebuildC1(); else rebuildC2();
 }
 function getMonths(n){let e=ALL_MONTHS.length-1,st=Math.max(0,e-n+1);return ALL_MONTHS.slice(st,e+1);}
-
 function rebuildC1(){
   if(charts.c1)charts.c1.destroy();
   let months=getMonths(ranges.paid),labels=months.map(mLabel);
@@ -389,6 +407,7 @@ function rebuildC2(){
   });
 }
 
+// ── 分頁切換 ──
 function switchTab(i){
   [0,1,2].forEach(j=>{
     document.getElementById('page'+j).classList.toggle('active',j===i);
@@ -398,22 +417,26 @@ function switchTab(i){
   if(i===2)renderForm();
 }
 
+// ── 明細表 ──
+function updateDetailMonthSelector(){
+  let opts=ALL_MONTHS.slice().reverse().map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
+  document.getElementById('detail-month').innerHTML=opts;
+}
 function renderDetail(){
   let m=document.getElementById('detail-month').value;
   if(!m||!sampleData[m]) return;
   let prev=prevMonth(m);
-  let d=sampleData[m],dp=prev&&sampleData[prev]?sampleData[prev]:{};
-  let liq=s(d.liquid,'amt'),inv=s(d.invest,'amt'),exp=s(d.paid,'amt')+s(d.unpaid,'amt');
-  let pliq=prev?s(dp.liquid,'amt'):null,pinv=prev?s(dp.invest,'amt'):null,pexp=prev?s(dp.paid,'amt')+s(dp.unpaid,'amt'):null;
+  let d=sampleData[m], dp=prev&&sampleData[prev]?sampleData[prev]:{};
+  let liq=s(d.liquid,'amt'), inv=s(d.invest,'amt'), exp=s(d.paid,'amt')+s(d.unpaid,'amt');
+  let pliq=prev?s(dp.liquid,'amt'):null, pinv=prev?s(dp.invest,'amt'):null, pexp=prev?s(dp.paid,'amt')+s(dp.unpaid,'amt'):null;
   document.getElementById('detail-metrics').innerHTML=`
-    <div class="metric"><div class="metric-label">存款</div><div class="metric-value green">${fmt(liq)}</div><div class="metric-growth">${growthTag(liq,pliq)}</div></div>
-    <div class="metric"><div class="metric-label">投資資產</div><div class="metric-value blue">${fmt(inv)}</div><div class="metric-growth">${growthTag(inv,pinv)}</div></div>
-    <div class="metric"><div class="metric-label">花費（已付＋未付）</div><div class="metric-value red">${fmt(exp)}</div><div class="metric-growth">${growthTag(exp,pexp)}</div></div>`;
+    <div class="metric"><div class="metric-label">存款</div><div class="metric-value">${fmt(liq)}</div><div class="metric-growth">${growthTag(liq,pliq)}</div></div>
+    <div class="metric"><div class="metric-label">投資資產</div><div class="metric-value">${fmt(inv)}</div><div class="metric-growth">${growthTag(inv,pinv)}</div></div>
+    <div class="metric"><div class="metric-label">花費（已付＋未付）</div><div class="metric-value">${fmt(exp)}</div><div class="metric-growth">${growthTag(exp,pexp)}</div></div>`;
   let html='';
   CATS.forEach(c=>{
-    let rows=d[c.key]||[],total=s(rows,'amt');
+    let rows=d[c.key]||[], total=s(rows,'amt');
     let ptotal=prev?s((dp[c.key]||[]),'amt'):null;
-    let growthHtml=growthTagDark(total,ptotal);
     html+=`<div class="card">
       <div class="section-header"><span class="dot" style="background:${c.color}"></span>${c.label}${c.desc?'（'+c.desc+'）':''}</div>
       <table class="data-table"><thead><tr><th>負責人</th><th>項目</th><th style="text-align:right">金額</th></tr></thead><tbody>`;
@@ -421,13 +444,19 @@ function renderDetail(){
     rows.forEach(r=>{html+=`<tr><td>${r.who}</td><td>${r.item}</td><td class="amount">${fmt(r.amt)}</td></tr>`;});
     html+=`</tbody></table>
       <div class="section-total"><span>合計</span><strong>${fmt(total)}</strong></div>
-      <div style="text-align:right;margin-top:6px;">${growthHtml}</div>
+      <div style="text-align:right;margin-top:6px;">${growthTagDark(total,ptotal)}</div>
     </div>`;
   });
   document.getElementById('detail-content').innerHTML=html;
 }
 
+// ── 每月記帳 ──
 let formRows={liquid:[],invest:[],paid:[],unpaid:[]};
+function getInputMonth(){
+  let y=document.getElementById('input-year').value;
+  let mo=document.getElementById('input-mon').value;
+  return y+'-'+String(mo).padStart(2,'0');
+}
 function renderForm(){
   let html='';
   CATS.forEach(c=>{
@@ -441,7 +470,7 @@ function renderForm(){
   CATS.forEach(c=>refreshRows(c.key));
 }
 function refreshRows(key){
-  let cont=document.getElementById('rows-'+key);if(!cont)return;
+  let cont=document.getElementById('rows-'+key); if(!cont)return;
   let opts=pastItems[key].map(i=>`<option value="${i}">${i}</option>`).join('');
   cont.innerHTML=formRows[key].map((r,i)=>`
     <div class="form-row">
@@ -459,27 +488,31 @@ function refreshRows(key){
 function addRow(key){formRows[key].push({who:'子萱',item:'',amt:''});refreshRows(key);}
 function rmRow(key,i){formRows[key].splice(i,1);if(!formRows[key].length)formRows[key]=[{who:'子萱',item:'',amt:''}];refreshRows(key);}
 
+function showToast(msg, type='success'){
+  let t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type; t.style.display='block';
+  setTimeout(()=>t.style.display='none', 3000);
+}
+
 async function saveData(){
+  if(!accessToken){ showToast('請先登入','error'); return; }
   let m=getInputMonth();
-  let toast=document.getElementById('toast');
-  toast.textContent='儲存中...';toast.style.display='block';
+  let btn=document.getElementById('save-btn');
+  btn.disabled=true; btn.textContent='儲存中...';
   try{
     for(let c of CATS){
       let rows=formRows[c.key].filter(r=>r.item&&r.amt).map(r=>({month:m,who:r.who,item:r.item,amt:r.amt}));
-      if(rows.length) await appendToSheet(c.key,rows);
+      if(rows.length) await appendToSheet(c.key, rows);
     }
-    toast.textContent='✓ 資料已儲存！正在重新載入...';
-    await initInputMonthSelectors();
-loadAllData();
-    setTimeout(()=>toast.style.display='none',2500);
+    showToast('✓ 資料已儲存！');
     formRows={liquid:[],invest:[],paid:[],unpaid:[]};
+    await loadAllData();
   }catch(e){
-    toast.textContent='❌ 儲存失敗，請確認 API 設定';
-    setTimeout(()=>toast.style.display='none',3000);
+    showToast('❌ 儲存失敗：'+e.message,'error');
+  }finally{
+    btn.disabled=false; btn.textContent='儲存本月資料';
   }
 }
-
-loadAllData();
 </script>
 </body>
 </html>
