@@ -135,7 +135,14 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
   <div class="page" id="page2">
     <div class="month-select-row">
       <label>記帳月份</label>
-      <select id="input-month"></select>
+      <select id="input-year" style="font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid #d4b896;background:#fff8f0;color:#513C2C;">
+        <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option><option value="2033">2033</option><option value="2034">2034</option><option value="2035">2035</option><option value="2036">2036</option><option value="2037">2037</option><option value="2038">2038</option><option value="2039">2039</option><option value="2040">2040</option><option value="2041">2041</option><option value="2042">2042</option><option value="2043">2043</option><option value="2044">2044</option><option value="2045">2045</option><option value="2046">2046</option>
+      </select>
+      <span style="color:#8a6a52;">年</span>
+      <select id="input-mon" style="font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid #d4b896;background:#fff8f0;color:#513C2C;">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+      </select>
+      <span style="color:#8a6a52;">月</span>
     </div>
     <div id="form-sections"></div>
     <button class="save-btn" onclick="saveData()">儲存本月資料</button>
@@ -279,13 +286,37 @@ function showError(msg){
   document.querySelector('.app').prepend(el);
 }
 
+function getInputMonth(){
+  let y=document.getElementById('input-year').value;
+  let mo=document.getElementById('input-mon').value;
+  return y+'-'+mo.padStart(2,'0');
+}
+
+function initInputMonthSelectors(){
+  let curYear=new Date().getFullYear();
+  let curMon=new Date().getMonth()+1;
+  let yearOpts='';
+  for(let y=curYear;y<=curYear+20;y++) yearOpts+=`<option value="${y}">${y}</option>`;
+  document.getElementById('input-year').innerHTML=yearOpts;
+  let monOpts='';
+  for(let mo=1;mo<=12;mo++) monOpts+=`<option value="${mo}" ${mo===curMon?'selected':''}>${mo}</option>`;
+  document.getElementById('input-mon').innerHTML=monOpts;
+}
+
 function updateMonthSelectors(){
   let opts=ALL_MONTHS.slice().reverse().map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
   document.getElementById('detail-month').innerHTML=opts;
-  // 每月記帳預設上個月
-  let prev=[...ALL_MONTHS].pop();
-  let inputOpts=ALL_MONTHS.slice().reverse().map(m=>`<option value="${m}" ${m===prev?'selected':''}>${mLabel(m)}</option>`).join('');
-  document.getElementById('input-month').innerHTML=inputOpts;
+
+  // 年份：當年到後20年
+  let curYear=new Date().getFullYear();
+  let yearOpts='';
+  for(let y=curYear;y<=curYear+20;y++) yearOpts+=`<option value="${y}">${y}</option>`;
+  document.getElementById('input-year').innerHTML=yearOpts;
+
+  // 月份：1~12月
+  let monOpts='';
+  for(let mo=1;mo<=12;mo++) monOpts+=`<option value="${mo}" ${mo===new Date().getMonth()?'selected':''}>${mo}</option>`;
+  document.getElementById('input-mon').innerHTML=monOpts;
 }
 
 function editGoal(){
@@ -429,7 +460,7 @@ function addRow(key){formRows[key].push({who:'子萱',item:'',amt:''});refreshRo
 function rmRow(key,i){formRows[key].splice(i,1);if(!formRows[key].length)formRows[key]=[{who:'子萱',item:'',amt:''}];refreshRows(key);}
 
 async function saveData(){
-  let m=document.getElementById('input-month').value;
+  let m=getInputMonth();
   let toast=document.getElementById('toast');
   toast.textContent='儲存中...';toast.style.display='block';
   try{
@@ -438,7 +469,8 @@ async function saveData(){
       if(rows.length) await appendToSheet(c.key,rows);
     }
     toast.textContent='✓ 資料已儲存！正在重新載入...';
-    await loadAllData();
+    await initInputMonthSelectors();
+loadAllData();
     setTimeout(()=>toast.style.display='none',2500);
     formRows={liquid:[],invest:[],paid:[],unpaid:[]};
   }catch(e){
