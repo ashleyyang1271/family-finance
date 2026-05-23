@@ -232,34 +232,14 @@ function handleCredential(response){
 
 function getAccessToken(){
   document.getElementById('login-status').textContent='授權中...';
-  // 偵測是否為 PWA / 手機模式
-  const isPWA=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
-  if(isPWA){
-    // 用 redirect 模式
-    const params=new URLSearchParams({
-      client_id: CLIENT_ID,
-      redirect_uri: location.origin+location.pathname,
-      response_type: 'token',
-      scope: SCOPES,
-      state: btoa(JSON.stringify(currentUser))
-    });
-    location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
-  } else {
-    // 桌面用彈出視窗模式
-    const client=google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback:(resp)=>{
-        if(resp.error){
-          document.getElementById('login-status').textContent='授權失敗，請重試';
-          return;
-        }
-        accessToken=resp.access_token;
-        onLoginSuccess();
-      }
-    });
-    client.requestAccessToken();
-  }
+  const params=new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: location.origin+location.pathname,
+    response_type: 'token',
+    scope: SCOPES,
+    state: btoa(JSON.stringify(currentUser||{}))
+  });
+  location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
 }
 
 // 處理 redirect 回來後的 token
