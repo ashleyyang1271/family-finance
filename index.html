@@ -16,13 +16,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
 .nav-btn.active{color:#513C2C;font-weight:500;}
 .card{background:#fff8f0;border:1px solid #e8d8c4;border-radius:14px;padding:16px 18px;margin-bottom:12px;}
 .metric-row{display:grid;gap:10px;margin-bottom:12px;}
-.metric-row-2{grid-template-columns:1fr 1fr;}.metric-row-3{grid-template-columns:repeat(3,1fr);}
+.metric-row-2{grid-template-columns:1fr 1fr;}
 .metric{background:#513C2C;border-radius:10px;padding:12px 14px;}
 .metric-label{font-size:11px;color:#d4b896;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.03em;}
-.metric-value{font-size:17px;font-weight:700;color:#ffffff;}
-.metric-growth{font-size:11px;margin-top:4px;color:#ffffff;}
-.growth-up{color:#ffffff;}.growth-down{color:#ffffff;}.growth-flat{color:#ffffff;}
-.section-header{font-size:13px;font-weight:700;color:#7a5c42;margin-bottom:10px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.04em;}
+.metric-value{font-size:17px;font-weight:700;color:#fff;}
+.metric-growth{font-size:17px;font-weight:700;margin-top:4px;}
+.growth-up{color:#c0392b;}.growth-down{color:#1a1a1a;}.growth-flat{color:#d4b896;}
 .progress-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
 .progress-title{font-size:15px;font-weight:700;color:#513C2C;}
 .progress-pct{font-size:15px;color:#3d7a68;font-weight:700;}
@@ -47,28 +46,46 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
 .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;}
 .data-table{width:100%;font-size:13px;border-collapse:collapse;}
 .data-table th{text-align:left;color:#8a6a52;font-weight:500;padding:6px 8px;border-bottom:1px solid #ead8c4;font-size:12px;}
-.data-table td{padding:8px 8px;color:#513C2C;border-bottom:1px solid #f0e4d4;}
+.data-table td{padding:8px;color:#513C2C;border-bottom:1px solid #f0e4d4;}
 .data-table tr:last-child td{border-bottom:none;}
-.data-table .amount{text-align:right;font-weight:600;}
+.data-table .amount{text-align:right;font-weight:600;white-space:nowrap;}
 .section-total{display:flex;justify-content:space-between;align-items:center;background:#513C2C;border-radius:8px;padding:10px 14px;margin-top:10px;}
 .section-total span{font-size:12px;color:#d4b896;font-weight:500;}
-.section-total strong{font-size:16px;color:#ffffff;font-weight:700;}
-.form-row{display:grid;grid-template-columns:1fr 1.5fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px;}
-.form-row input,.form-row select{font-size:13px;padding:5px 8px;height:34px;border:1px solid #d4b896;border-radius:8px;background:#fff8f0;color:#513C2C;}
-.add-btn{background:transparent;border:1px solid #d4b896;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;color:#7a5c42;font-weight:500;}
-.add-btn:hover{background:#f0e0cc;}
-.rm-btn{background:transparent;border:none;cursor:pointer;color:#c4a080;padding:4px;font-size:16px;}
-.rm-btn:hover{color:#a0522d;}
-.save-btn{background:#513C2C;color:#fff8f0;border:none;border-radius:10px;padding:12px 24px;font-size:14px;cursor:pointer;width:100%;margin-top:8px;font-weight:600;}
-.save-btn:hover{background:#3d2c1e;}
-.save-btn:disabled{background:#a08870;cursor:not-allowed;}
-.month-select-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.section-total strong{font-size:16px;color:#fff;font-weight:700;}
+.section-header{font-size:13px;font-weight:700;color:#7a5c42;margin-bottom:10px;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.04em;}
+.cat-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.cat-tab{padding:8px 4px;font-size:12px;font-weight:600;border:1.5px solid #d4b896;border-radius:10px;background:#fff8f0;color:#8a6a52;cursor:pointer;text-align:center;transition:all 0.15s;}
+.cat-tab.active{color:#fff8f0;border-color:transparent;}
+.month-select-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
 .month-select-row label{font-size:14px;color:#8a6a52;font-weight:500;}
 .month-select-row select{font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid #d4b896;background:#fff8f0;color:#513C2C;}
+/* 記帳區 */
+.entry-card{background:#fff8f0;border:1px solid #e8d8c4;border-radius:14px;padding:16px 18px;margin-bottom:12px;}
+.entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.entry-title{font-size:13px;font-weight:700;color:#7a5c42;display:flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:0.04em;}
+.entry-actions{display:flex;gap:6px;}
+.edit-btn{font-size:12px;padding:5px 12px;border:1.5px solid #869D96;border-radius:8px;background:transparent;cursor:pointer;color:#869D96;font-weight:600;}
+.edit-btn:hover{background:#869D96;color:#fff;}
+.save-cat-btn{font-size:13px;padding:10px;border:none;border-radius:8px;background:#513C2C;cursor:pointer;color:#fff8f0;font-weight:600;width:100%;margin-top:10px;}
+.add-row-btn{font-size:12px;padding:8px;border:1.5px solid #d4b896;border-radius:8px;background:transparent;cursor:pointer;color:#7a5c42;font-weight:600;width:100%;margin-top:10px;}
+.add-row-btn:hover{background:#f0e0cc;}
+.entry-row{display:grid;grid-template-columns:60px 1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #f0e4d4;font-size:13px;}
+.entry-row:last-of-type{border-bottom:none;}
+.entry-who{color:#8a6a52;font-size:12px;}
+.entry-item{color:#513C2C;}
+.entry-amt{text-align:right;font-weight:600;white-space:nowrap;}
+.edit-row{padding:8px 0;border-bottom:1px solid #f0e4d4;}
+.edit-row:last-of-type{border-bottom:none;}
+.edit-row-top{display:grid;grid-template-columns:90px 1fr;gap:8px;margin-bottom:6px;}
+.edit-row-bot{display:grid;grid-template-columns:1fr 36px;gap:8px;}
+.edit-row select,.edit-row input{font-size:13px;padding:6px 10px;height:36px;border:1px solid #d4b896;border-radius:8px;background:#f5ece0;color:#513C2C;width:100%;}
+.new-section{margin-top:12px;padding-top:12px;border-top:1px dashed #d4b896;}
+.rm-btn{width:36px;height:36px;background:transparent;border:1px solid #e8c4b0;border-radius:8px;cursor:pointer;color:#c4a080;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rm-btn:hover{color:#a0522d;border-color:#a0522d;}
+.no-data{color:#b8a090;font-size:13px;padding:8px 0;text-align:center;}
 .toast{display:none;border-radius:10px;padding:10px 16px;font-size:14px;text-align:center;margin-top:12px;font-weight:500;}
 .toast.success{background:#869D96;color:#fff;}
 .toast.error{background:#a0522d;color:#fff;}
-
 /* 登入畫面 */
 .login-screen{position:fixed;inset:0;background:#f5ece0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:20px;}
 .login-title{font-size:22px;font-weight:700;color:#513C2C;}
@@ -81,7 +98,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
 </head>
 <body>
 
-<!-- 登入畫面 -->
 <div class="login-screen" id="login-screen">
   <div class="login-title">家庭財務總覽</div>
   <div class="login-sub">請用 Google 帳號登入</div>
@@ -92,6 +108,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
 <div class="app" id="main-app" style="display:none;">
   <div id="user-bar-wrap"></div>
 
+  <!-- 首頁 -->
   <div class="page active" id="page0">
     <div class="card">
       <div class="progress-header">
@@ -143,15 +160,17 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
     </div>
   </div>
 
+  <!-- 明細表 -->
   <div class="page" id="page1">
     <div class="filter-row">
       <label style="color:#8a6a52;font-weight:500;">篩選月份</label>
       <select id="detail-month" onchange="renderDetail()"></select>
     </div>
-    <div class="metric-row metric-row-3" id="detail-metrics"></div>
+    <div class="cat-tabs" id="cat-tabs"></div>
     <div id="detail-content"></div>
   </div>
 
+  <!-- 每月記帳 -->
   <div class="page" id="page2">
     <div class="month-select-row">
       <label>記帳月份</label>
@@ -163,8 +182,8 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#51
         <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5" selected>5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
       </select>
     </div>
-    <div id="form-sections"></div>
-    <button class="save-btn" onclick="saveData()" id="save-btn">儲存本月資料</button>
+    <div class="cat-tabs" id="form-cat-tabs"></div>
+    <div id="form-cat-content"></div>
     <div class="toast" id="toast"></div>
   </div>
 </div>
@@ -196,6 +215,7 @@ const CATS=[
   {key:'paid',label:'已付帳款',color:'#a0522d',desc:'卡費、管理費'},
   {key:'unpaid',label:'未付帳款',color:'#c4935a',desc:''}
 ];
+const COLORS={liquid:'#869D96',invest:'#513C2C',paid:'#a0522d',unpaid:'#c4935a'};
 const pastItems={
   liquid:['子萱 - 中信存款','子萱 - 國泰存款','子萱 - 一銀存款','共同 - 國泰存款','佳韋 - 國泰存款','佳韋 - 郵局存款','佳韋 - 合庫存款','佳韋 - 兆豐存款'],
   invest:['子萱 - 0050','子萱 - 中信金','子萱 - 玉山金','佳韋 - 股票'],
@@ -206,133 +226,112 @@ const pastItems={
 let sampleData={}, ALL_MONTHS=[], charts={c1:null,c2:null}, ranges={paid:3,invest:3};
 let goalVal=parseInt(localStorage.getItem('goalVal'))||3000000;
 let accessToken=null, currentUser=null;
+let activeCat='liquid', activeFormCat='liquid';
+let editMode={liquid:false,invest:false,paid:false,unpaid:false};
+let editRows={liquid:[],invest:[],paid:[],unpaid:[]};
+let newRows={liquid:[],invest:[],paid:[],unpaid:[]};
 
-// ── Google Identity Services ──
+// ── Google 登入 ──
 window.onGoogleLibraryLoad=()=>{
-  // 先檢查是否從 OAuth redirect 回來
   if(handleRedirectToken()) return;
-
-  google.accounts.id.initialize({
-    client_id: CLIENT_ID,
-    callback: handleCredential,
-    auto_select: true
-  });
-  google.accounts.id.renderButton(
-    document.getElementById('g_id_signin'),
-    {theme:'outline', size:'large', text:'signin_with', locale:'zh-TW'}
-  );
+  google.accounts.id.initialize({client_id:CLIENT_ID,callback:handleCredential,auto_select:true});
+  google.accounts.id.renderButton(document.getElementById('g_id_signin'),{theme:'outline',size:'large',text:'signin_with',locale:'zh-TW'});
   google.accounts.id.prompt();
 };
-
-function handleCredential(response){
-  const payload=JSON.parse(atob(response.credential.split('.')[1]));
-  currentUser={name:payload.name, email:payload.email};
+function handleCredential(r){
+  const p=JSON.parse(atob(r.credential.split('.')[1]));
+  currentUser={name:p.name,email:p.email};
   getAccessToken();
 }
-
 function getAccessToken(){
   document.getElementById('login-status').textContent='授權中...';
-  const params=new URLSearchParams({
-    client_id: CLIENT_ID,
-    redirect_uri: location.origin+location.pathname,
-    response_type: 'token',
-    scope: SCOPES,
-    state: btoa(JSON.stringify(currentUser||{}))
-  });
+  const params=new URLSearchParams({client_id:CLIENT_ID,redirect_uri:location.origin+location.pathname,response_type:'token',scope:SCOPES,state:btoa(JSON.stringify(currentUser||{}))});
   location.href='https://accounts.google.com/o/oauth2/v2/auth?'+params.toString();
 }
-
-// 處理 redirect 回來後的 token
 function handleRedirectToken(){
   const hash=new URLSearchParams(location.hash.slice(1));
-  const token=hash.get('access_token');
-  const state=hash.get('state');
+  const token=hash.get('access_token'),state=hash.get('state');
   if(token){
     accessToken=token;
-    if(state){ try{ currentUser=JSON.parse(atob(state)); }catch(e){} }
-    // 清除網址上的 token
+    if(state){try{currentUser=JSON.parse(atob(state));}catch(e){}}
     history.replaceState(null,'',location.pathname);
     onLoginSuccess();
     return true;
   }
   return false;
 }
-
 function onLoginSuccess(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='block';
   document.getElementById('bottom-nav').style.display='flex';
-  document.getElementById('user-bar-wrap').innerHTML=`
-    <div class="user-bar">
-      <div class="user-info">👤 ${currentUser.name}（${currentUser.email}）</div>
-      <button class="logout-btn" onclick="logout()">登出</button>
-    </div>`;
+  document.getElementById('user-bar-wrap').innerHTML=`<div class="user-bar"><div class="user-info">👤 ${currentUser?.name||''}（${currentUser?.email||''}）</div><button class="logout-btn" onclick="logout()">登出</button></div>`;
   loadAllData();
 }
-
 function logout(){
   google.accounts.id.disableAutoSelect();
-  accessToken=null; currentUser=null;
+  accessToken=null;currentUser=null;
   document.getElementById('main-app').style.display='none';
   document.getElementById('bottom-nav').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
 
 // ── 資料讀取 ──
-async function fetchSheetData(sheetName){
-  const url=`${BASE_URL}/${sheetName}?key=${API_KEY}`;
-  const res=await fetch(url);
-  if(!res.ok) throw new Error(`無法讀取 ${sheetName}`);
+async function fetchSheetData(name){
+  const res=await fetch(`${BASE_URL}/${name}?key=${API_KEY}`);
+  if(!res.ok) throw new Error(`無法讀取 ${name}`);
   const json=await res.json();
   const rows=json.values||[];
   if(rows.length<2) return [];
-  const headers=rows[0];
-  return rows.slice(1).map(r=>{let o={};headers.forEach((h,i)=>o[h]=r[i]||'');return o;});
+  const h=rows[0];
+  return rows.slice(1).map(r=>{let o={};h.forEach((k,i)=>o[k]=r[i]||'');return o;});
 }
-
 async function loadAllData(){
   try{
-    const [liquid,invest,paid,unpaid]=await Promise.all([
-      fetchSheetData('liquid'),fetchSheetData('invest'),
-      fetchSheetData('paid'),fetchSheetData('unpaid')
-    ]);
+    const [liquid,invest,paid,unpaid]=await Promise.all([fetchSheetData('liquid'),fetchSheetData('invest'),fetchSheetData('paid'),fetchSheetData('unpaid')]);
     sampleData={};
-    const process=(rows,key)=>rows.forEach(r=>{
-      let m=r.month; if(!m) return;
-      if(!sampleData[m]) sampleData[m]={liquid:[],invest:[],paid:[],unpaid:[]};
+    const proc=(rows,key)=>rows.forEach(r=>{
+      let m=r.month;if(!m)return;
+      if(!sampleData[m])sampleData[m]={liquid:[],invest:[],paid:[],unpaid:[]};
       sampleData[m][key].push({who:r.who,item:r.item,amt:+r.amt||0});
     });
-    process(liquid,'liquid'); process(invest,'invest');
-    process(paid,'paid'); process(unpaid,'unpaid');
+    proc(liquid,'liquid');proc(invest,'invest');proc(paid,'paid');proc(unpaid,'unpaid');
     ALL_MONTHS=Object.keys(sampleData).sort();
     updateDetailMonthSelector();
+    renderCatTabs();
+    renderFormCatTabs();
     refreshHomeSummary();
     renderDetail();
-    rebuildC1(); rebuildC2();
-  }catch(e){
-    console.error(e);
-  }
+    rebuildC1();rebuildC2();
+  }catch(e){console.error(e);}
 }
 
 // ── 資料寫入 ──
-async function appendToSheet(sheetName, rows){
-  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${sheetName}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
-  const values=rows.map(r=>[r.month,r.who,r.item,r.amt]);
-  const res=await fetch(url,{
+async function appendToSheet(name,rows){
+  const res=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${name}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':`Bearer ${accessToken}`},
-    body:JSON.stringify({values})
+    body:JSON.stringify({values:rows.map(r=>[r.month,r.who,r.item,r.amt])})
   });
-  if(!res.ok) throw new Error(`寫入 ${sheetName} 失敗`);
+  if(!res.ok) throw new Error(`寫入 ${name} 失敗`);
+}
+async function updateSheetRows(name,startRow,rows){
+  const range=`${name}!A${startRow}:D${startRow+rows.length-1}`;
+  const res=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${accessToken}`},
+    body:JSON.stringify({values:rows.map(r=>[r.month,r.who,r.item,r.amt])})
+  });
+  if(!res.ok) throw new Error(`更新 ${name} 失敗`);
 }
 
-// ── 工具函式 ──
+// ── 工具 ──
 function s(arr,k){return (arr||[]).reduce((a,b)=>a+(+b[k]||0),0);}
 function fmt(n){return '$'+Math.round(n).toLocaleString();}
 function mLabel(m){let p=m.split('-');return p[0]+'年'+MTW[+p[1]-1];}
 function getSurplus(m){let d=sampleData[m]||{};return s(d.liquid,'amt')-s(d.unpaid,'amt');}
 function getInvest(m){return s((sampleData[m]||{}).invest,'amt');}
 function prevMonth(m){let i=ALL_MONTHS.indexOf(m);return i>0?ALL_MONTHS[i-1]:null;}
+function getInputMonth(){let y=document.getElementById('input-year').value,mo=String(document.getElementById('input-mon').value).padStart(2,'0');return y+'-'+mo;}
 
 function growthTag(cur,prev){
   if(prev===null||prev===undefined)return '<span class="growth-flat">— 無前月資料</span>';
@@ -343,28 +342,30 @@ function growthTag(cur,prev){
   return `<span class="${cls}">${arrow} ${sign}${Math.round(pct)}% 較上月</span>`;
 }
 function growthTagDark(cur,prev){
-  if(prev===null||prev===undefined)return '<span style="color:#a08870;font-size:13px;font-weight:500;">— 無前月資料</span>';
+  if(prev===null||prev===undefined)return '<span style="color:#a08870;font-size:13px;font-weight:600;">— 無前月資料</span>';
   if(prev===0)return '<span style="color:#a08870;font-size:13px;">—</span>';
   let pct=(cur-prev)/prev*100,sign=pct>=0?'+':'';
-  let color=pct>0?'#3d7a68':pct<0?'#a0522d':'#7a5c42';
+  let color=pct>0?'#c0392b':'#1a1a1a';
   let arrow=pct>0?'▲':pct<0?'▼':'—';
-  return `<span style="color:${color};font-size:13px;font-weight:500;">${arrow} ${sign}${Math.round(pct)}% 較上月</span>`;
+  return `<span style="color:${color};font-size:13px;font-weight:600;">${arrow} ${sign}${Math.round(pct)}% 較上月</span>`;
+}
+function showToast(msg,type='success'){
+  let t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+type;t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
 }
 
 // ── 首頁 ──
 function editGoal(){
   let inp=document.getElementById('goal-input');
-  inp.value=goalVal; inp.type='number';
-  inp.removeAttribute('readonly'); inp.classList.add('editing'); inp.focus();
+  inp.value=goalVal;inp.type='number';inp.removeAttribute('readonly');inp.classList.add('editing');inp.focus();
   document.getElementById('goal-edit-btn').style.display='none';
   document.getElementById('goal-save-btn').style.display='block';
 }
 function saveGoal(){
   let inp=document.getElementById('goal-input');
-  let v=+inp.value||goalVal; goalVal=v;
-  localStorage.setItem('goalVal',v);
-  inp.type='text'; inp.value=v.toLocaleString();
-  inp.setAttribute('readonly',''); inp.classList.remove('editing');
+  let v=+inp.value||goalVal;goalVal=v;localStorage.setItem('goalVal',v);
+  inp.type='text';inp.value=v.toLocaleString();inp.setAttribute('readonly','');inp.classList.remove('editing');
   document.getElementById('goal-edit-btn').style.display='block';
   document.getElementById('goal-save-btn').style.display='none';
   document.getElementById('target-asset').textContent=fmt(goalVal);
@@ -373,10 +374,10 @@ function saveGoal(){
 function refreshHomeSummary(){
   document.getElementById('goal-input').value=goalVal.toLocaleString();
   document.getElementById('target-asset').textContent=fmt(goalVal);
-  if(!ALL_MONTHS.length) return;
-  let latest=ALL_MONTHS[ALL_MONTHS.length-1], prev=prevMonth(latest);
-  let curS=getSurplus(latest), prevS=prev?getSurplus(prev):null;
-  let curI=getInvest(latest), prevI=prev?getInvest(prev):null;
+  if(!ALL_MONTHS.length)return;
+  let latest=ALL_MONTHS[ALL_MONTHS.length-1],prev=prevMonth(latest);
+  let curS=getSurplus(latest),prevS=prev?getSurplus(prev):null;
+  let curI=getInvest(latest),prevI=prev?getInvest(prev):null;
   let pct=Math.min(100,Math.round(curS/goalVal*100));
   document.getElementById('pct-label').textContent=pct+'%';
   document.getElementById('prog-bar').style.width=pct+'%';
@@ -391,34 +392,18 @@ function refreshHomeSummary(){
 function setRange(type,n){
   ranges[type]=n;
   document.querySelectorAll('#seg-'+type+' .seg-btn').forEach((b,i)=>{b.classList.toggle('active',[3,6,12][i]===n);});
-  if(type==='paid')rebuildC1(); else rebuildC2();
+  if(type==='paid')rebuildC1();else rebuildC2();
 }
 function getMonths(n){let e=ALL_MONTHS.length-1,st=Math.max(0,e-n+1);return ALL_MONTHS.slice(st,e+1);}
 function rebuildC1(){
   if(charts.c1)charts.c1.destroy();
-  let months=getMonths(ranges.paid),labels=months.map(mLabel);
-  let paid=months.map(m=>s((sampleData[m]||{}).paid,'amt'));
-  charts.c1=new Chart(document.getElementById('c1'),{
-    type:'bar',
-    data:{labels,datasets:[{label:'已付帳款',data:paid,backgroundColor:'rgba(160,82,45,0.7)',borderRadius:6,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
-      y:{ticks:{callback:v=>'$'+(v/10000).toFixed(0)+'萬',font:{size:11},color:'#8a6a52'},grid:{color:'rgba(81,60,44,0.06)'},beginAtZero:true,border:{display:false}},
-      x:{ticks:{font:{size:11},color:'#8a6a52',autoSkip:false},grid:{display:false},border:{display:false}}
-    }}
-  });
+  let months=getMonths(ranges.paid),labels=months.map(mLabel),paid=months.map(m=>s((sampleData[m]||{}).paid,'amt'));
+  charts.c1=new Chart(document.getElementById('c1'),{type:'bar',data:{labels,datasets:[{data:paid,backgroundColor:'rgba(160,82,45,0.7)',borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'$'+(v/10000).toFixed(0)+'萬',font:{size:11},color:'#8a6a52'},grid:{color:'rgba(81,60,44,0.06)'},beginAtZero:true,border:{display:false}},x:{ticks:{font:{size:11},color:'#8a6a52',autoSkip:false},grid:{display:false},border:{display:false}}}}});
 }
 function rebuildC2(){
   if(charts.c2)charts.c2.destroy();
-  let months=getMonths(ranges.invest),labels=months.map(mLabel);
-  let invest=months.map(m=>s((sampleData[m]||{}).invest,'amt'));
-  charts.c2=new Chart(document.getElementById('c2'),{
-    type:'line',
-    data:{labels,datasets:[{label:'股票市值',data:invest,borderColor:'#869D96',backgroundColor:'rgba(134,157,150,0.1)',tension:0.4,fill:true,borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#869D96'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
-      y:{ticks:{callback:v=>'$'+(v/10000).toFixed(0)+'萬',font:{size:11},color:'#8a6a52'},grid:{color:'rgba(81,60,44,0.06)'},border:{display:false}},
-      x:{ticks:{font:{size:11},color:'#8a6a52',autoSkip:false},grid:{display:false},border:{display:false}}
-    }}
-  });
+  let months=getMonths(ranges.invest),labels=months.map(mLabel),invest=months.map(m=>s((sampleData[m]||{}).invest,'amt'));
+  charts.c2=new Chart(document.getElementById('c2'),{type:'line',data:{labels,datasets:[{data:invest,borderColor:'#869D96',backgroundColor:'rgba(134,157,150,0.1)',tension:0.4,fill:true,borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#869D96'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'$'+(v/10000).toFixed(0)+'萬',font:{size:11},color:'#8a6a52'},grid:{color:'rgba(81,60,44,0.06)'},border:{display:false}},x:{ticks:{font:{size:11},color:'#8a6a52',autoSkip:false},grid:{display:false},border:{display:false}}}}});
 }
 
 // ── 分頁切換 ──
@@ -428,103 +413,151 @@ function switchTab(i){
     document.getElementById('nav'+j).classList.toggle('active',j===i);
   });
   if(i===1)renderDetail();
-  if(i===2)renderForm();
+  if(i===2)renderFormCat();
 }
 
 // ── 明細表 ──
 function updateDetailMonthSelector(){
-  let opts=ALL_MONTHS.slice().reverse().map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
-  document.getElementById('detail-month').innerHTML=opts;
+  document.getElementById('detail-month').innerHTML=ALL_MONTHS.slice().reverse().map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
+}
+function renderCatTabs(){
+  document.getElementById('cat-tabs').innerHTML=CATS.map(c=>`
+    <button class="cat-tab ${activeCat===c.key?'active':''}" style="${activeCat===c.key?`background:${c.color};color:#fff8f0;`:''}" onclick="switchCat('${c.key}',this)">${c.label}</button>`).join('');
+}
+function switchCat(key){
+  activeCat=key;renderCatTabs();renderDetail();
 }
 function renderDetail(){
   let m=document.getElementById('detail-month').value;
-  if(!m||!sampleData[m]) return;
-  let prev=prevMonth(m);
-  let d=sampleData[m], dp=prev&&sampleData[prev]?sampleData[prev]:{};
-  let liq=s(d.liquid,'amt'), inv=s(d.invest,'amt'), exp=s(d.paid,'amt')+s(d.unpaid,'amt');
-  let pliq=prev?s(dp.liquid,'amt'):null, pinv=prev?s(dp.invest,'amt'):null, pexp=prev?s(dp.paid,'amt')+s(dp.unpaid,'amt'):null;
-  document.getElementById('detail-metrics').innerHTML=`
-    <div class="metric"><div class="metric-label">存款</div><div class="metric-value">${fmt(liq)}</div><div class="metric-growth">${growthTag(liq,pliq)}</div></div>
-    <div class="metric"><div class="metric-label">投資資產</div><div class="metric-value">${fmt(inv)}</div><div class="metric-growth">${growthTag(inv,pinv)}</div></div>
-    <div class="metric"><div class="metric-label">花費（已付＋未付）</div><div class="metric-value">${fmt(exp)}</div><div class="metric-growth">${growthTag(exp,pexp)}</div></div>`;
-  let html='';
-  CATS.forEach(c=>{
-    let rows=d[c.key]||[], total=s(rows,'amt');
-    let ptotal=prev?s((dp[c.key]||[]),'amt'):null;
-    html+=`<div class="card">
-      <div class="section-header"><span class="dot" style="background:${c.color}"></span>${c.label}${c.desc?'（'+c.desc+'）':''}</div>
-      <table class="data-table"><thead><tr><th>負責人</th><th>項目</th><th style="text-align:right">金額</th></tr></thead><tbody>`;
-    if(!rows.length)html+=`<tr><td colspan="3" style="color:#b8a090;font-size:12px;padding:8px">尚無資料</td></tr>`;
-    rows.forEach(r=>{html+=`<tr><td>${r.who}</td><td>${r.item}</td><td class="amount">${fmt(r.amt)}</td></tr>`;});
-    html+=`</tbody></table>
-      <div class="section-total"><span>合計</span><strong>${fmt(total)}</strong></div>
-      <div style="text-align:right;margin-top:6px;">${growthTagDark(total,ptotal)}</div>
-    </div>`;
-  });
+  if(!m||!sampleData[m])return;
+  let prev=prevMonth(m),d=sampleData[m],dp=prev&&sampleData[prev]?sampleData[prev]:{};
+  let c=CATS.find(x=>x.key===activeCat);
+  let rows=d[c.key]||[],total=s(rows,'amt'),ptotal=prev?s((dp[c.key]||[]),'amt'):null;
+  let html=`<div class="card"><div class="section-header"><span class="dot" style="background:${c.color}"></span>${c.label}${c.desc?'（'+c.desc+'）':''}</div>
+    <table class="data-table"><thead><tr><th>負責人</th><th>項目</th><th style="text-align:right">金額</th></tr></thead><tbody>`;
+  if(!rows.length)html+=`<tr><td colspan="3" style="color:#b8a090;font-size:12px;padding:8px;text-align:center;">尚無資料</td></tr>`;
+  rows.forEach(r=>{html+=`<tr><td>${r.who}</td><td>${r.item}</td><td class="amount">${fmt(r.amt)}</td></tr>`;});
+  html+=`</tbody></table><div class="section-total"><span>合計</span><strong>${fmt(total)}</strong></div><div style="text-align:right;margin-top:6px;">${growthTagDark(total,ptotal)}</div></div>`;
   document.getElementById('detail-content').innerHTML=html;
 }
 
 // ── 每月記帳 ──
-let formRows={liquid:[],invest:[],paid:[],unpaid:[]};
-function getInputMonth(){
-  let y=document.getElementById('input-year').value;
-  let mo=document.getElementById('input-mon').value;
-  return y+'-'+String(mo).padStart(2,'0');
+function renderFormCatTabs(){
+  document.getElementById('form-cat-tabs').innerHTML=CATS.map(c=>`
+    <button class="cat-tab ${activeFormCat===c.key?'active':''}" style="${activeFormCat===c.key?`background:${c.color};color:#fff8f0;`:''}" onclick="switchFormCat('${c.key}')">${c.label}</button>`).join('');
 }
-function renderForm(){
-  let html='';
-  CATS.forEach(c=>{
-    if(!formRows[c.key]||!formRows[c.key].length)formRows[c.key]=[{who:'子萱',item:'',amt:''}];
-    html+=`<div class="card">
-      <div class="section-header"><span class="dot" style="background:${c.color}"></span>${c.label}${c.desc?'（'+c.desc+'）':''}</div>
-      <div id="rows-${c.key}"></div>
-      <button class="add-btn" onclick="addRow('${c.key}')">＋ 新增一筆</button></div>`;
-  });
-  document.getElementById('form-sections').innerHTML=html;
-  CATS.forEach(c=>refreshRows(c.key));
-}
-function refreshRows(key){
-  let cont=document.getElementById('rows-'+key); if(!cont)return;
-  let opts=pastItems[key].map(i=>`<option value="${i}">${i}</option>`).join('');
-  cont.innerHTML=formRows[key].map((r,i)=>`
-    <div class="form-row">
-      <select onchange="formRows['${key}'][${i}].who=this.value">
-        <option value="子萱" ${r.who==='子萱'?'selected':''}>子萱</option>
-        <option value="佳韋" ${r.who==='佳韋'?'selected':''}>佳韋</option>
-        <option value="共同" ${r.who==='共同'?'selected':''}>共同</option>
-      </select>
-      <input list="list-${key}-${i}" placeholder="項目" value="${r.item}" oninput="formRows['${key}'][${i}].item=this.value">
-      <datalist id="list-${key}-${i}">${opts}</datalist>
-      <input type="number" placeholder="金額" value="${r.amt}" oninput="formRows['${key}'][${i}].amt=this.value">
-      <button class="rm-btn" onclick="rmRow('${key}',${i})">✕</button>
-    </div>`).join('');
-}
-function addRow(key){formRows[key].push({who:'子萱',item:'',amt:''});refreshRows(key);}
-function rmRow(key,i){formRows[key].splice(i,1);if(!formRows[key].length)formRows[key]=[{who:'子萱',item:'',amt:''}];refreshRows(key);}
-
-function showToast(msg, type='success'){
-  let t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast '+type; t.style.display='block';
-  setTimeout(()=>t.style.display='none', 3000);
+function switchFormCat(key){
+  activeFormCat=key;
+  editMode[key]=false;
+  newRows[key]=[];
+  renderFormCatTabs();
+  renderFormCat();
 }
 
-async function saveData(){
-  if(!accessToken){ showToast('請先登入','error'); return; }
+function renderFormCat(){
+  let key=activeFormCat;
+  let c=CATS.find(x=>x.key===key);
   let m=getInputMonth();
-  let btn=document.getElementById('save-btn');
-  btn.disabled=true; btn.textContent='儲存中...';
+  let existing=(sampleData[m]||{})[key]||[];
+  let isEdit=editMode[key];
+
+  let existingHtml='';
+  if(!existing.length){
+    existingHtml=`<p class="no-data">本月尚無資料</p>`;
+  } else if(isEdit){
+    existingHtml=editRows[key].map((r,i)=>`
+      <div class="edit-row">
+        <div class="edit-row-top">
+          <select onchange="editRows['${key}'][${i}].who=this.value">
+            <option value="子萱" ${r.who==='子萱'?'selected':''}>子萱</option>
+            <option value="佳韋" ${r.who==='佳韋'?'selected':''}>佳韋</option>
+            <option value="共同" ${r.who==='共同'?'selected':''}>共同</option>
+          </select>
+          <input list="el-${key}-${i}" placeholder="項目" value="${r.item}" oninput="editRows['${key}'][${i}].item=this.value">
+          <datalist id="el-${key}-${i}">${pastItems[key].map(x=>`<option value="${x}">`).join('')}</datalist>
+        </div>
+        <div class="edit-row-bot">
+          <input type="number" placeholder="金額" value="${r.amt}" oninput="editRows['${key}'][${i}].amt=this.value">
+          <button class="rm-btn" onclick="removeEditRow('${key}',${i})">✕</button>
+        </div>
+      </div>`).join('');
+  } else {
+    existingHtml=existing.map(r=>`
+      <div class="entry-row">
+        <span class="entry-who">${r.who}</span>
+        <span class="entry-item">${r.item}</span>
+        <span class="entry-amt">${fmt(r.amt)}</span>
+      </div>`).join('');
+  }
+
+  let newHtml='';
+  if(newRows[key].length){
+    newHtml=`<div class="new-section">`+newRows[key].map((r,i)=>`
+      <div class="edit-row">
+        <div class="edit-row-top">
+          <select onchange="newRows['${key}'][${i}].who=this.value">
+            <option value="子萱" ${r.who==='子萱'?'selected':''}>子萱</option>
+            <option value="佳韋" ${r.who==='佳韋'?'selected':''}>佳韋</option>
+            <option value="共同" ${r.who==='共同'?'selected':''}>共同</option>
+          </select>
+          <input list="nl-${key}-${i}" placeholder="項目" value="${r.item}" oninput="newRows['${key}'][${i}].item=this.value">
+          <datalist id="nl-${key}-${i}">${pastItems[key].map(x=>`<option value="${x}">`).join('')}</datalist>
+        </div>
+        <div class="edit-row-bot">
+          <input type="number" placeholder="金額" value="${r.amt}" oninput="newRows['${key}'][${i}].amt=this.value">
+          <button class="rm-btn" onclick="removeNewRow('${key}',${i})">✕</button>
+        </div>
+      </div>`).join('')+`</div>`;
+  }
+
+  let showSave=isEdit||newRows[key].length>0;
+
+  document.getElementById('form-cat-content').innerHTML=`
+    <div class="entry-card">
+      <div class="entry-header">
+        <div class="entry-title"><span class="dot" style="background:${c.color}"></span>${c.label}</div>
+        <div class="entry-actions">
+          ${existing.length?`<button class="edit-btn" onclick="toggleEdit('${key}')">${isEdit?'取消':'✎ 編輯'}</button>`:''}
+        </div>
+      </div>
+      ${existingHtml}
+      ${newHtml}
+      <button class="add-row-btn" onclick="addNewRow('${key}')">＋ 新增一筆</button>
+      ${showSave?`<button class="save-cat-btn" onclick="saveAll('${key}')">儲存</button>`:''}
+    </div>`;
+}
+
+function toggleEdit(key){
+  let m=getInputMonth();
+  let existing=(sampleData[m]||{})[key]||[];
+  if(!editMode[key]) editRows[key]=existing.map(r=>({...r}));
+  editMode[key]=!editMode[key];
+  renderFormCat();
+}
+function removeEditRow(key,i){editRows[key].splice(i,1);renderFormCat();}
+function addNewRow(key){newRows[key].push({who:'子萱',item:'',amt:''});renderFormCat();}
+function removeNewRow(key,i){newRows[key].splice(i,1);renderFormCat();}
+
+async function saveAll(key){
+  if(!accessToken){showToast('請先登入','error');return;}
+  let m=getInputMonth();
   try{
-    for(let c of CATS){
-      let rows=formRows[c.key].filter(r=>r.item&&r.amt).map(r=>({month:m,who:r.who,item:r.item,amt:r.amt}));
-      if(rows.length) await appendToSheet(c.key, rows);
-    }
-    showToast('✓ 資料已儲存！');
-    formRows={liquid:[],invest:[],paid:[],unpaid:[]};
-    await loadAllData();
+    // 新增筆數
+    let validNew=newRows[key].filter(r=>r.item&&r.amt).map(r=>({month:m,who:r.who,item:r.item,amt:r.amt}));
+    if(validNew.length) await appendToSheet(key,validNew);
+    // 更新記憶體
+    if(!sampleData[m]) sampleData[m]={liquid:[],invest:[],paid:[],unpaid:[]};
+    if(editMode[key]) sampleData[m][key]=editRows[key].filter(r=>r.item);
+    if(validNew.length) sampleData[m][key]=[...(sampleData[m][key]||[]),...validNew];
+    editMode[key]=false;
+    newRows[key]=[];
+    if(!ALL_MONTHS.includes(m)){ALL_MONTHS.push(m);ALL_MONTHS.sort();}
+    showToast('✓ 儲存成功！');
+    renderFormCat();
+    refreshHomeSummary();
+    rebuildC1();rebuildC2();
   }catch(e){
     showToast('❌ 儲存失敗：'+e.message,'error');
-  }finally{
-    btn.disabled=false; btn.textContent='儲存本月資料';
   }
 }
 </script>
