@@ -224,7 +224,7 @@ const pastItems={
 };
 
 let sampleData={}, ALL_MONTHS=[], charts={c1:null,c2:null}, ranges={paid:3,invest:3};
-let goalVal=parseInt(localStorage.getItem('goalVal'))||3000000;
+let goalVal=parseInt(localStorage.getItem('goalVal'))||2000000;
 let accessToken=null, currentUser=null;
 let activeCat='liquid', activeFormCat='liquid';
 let editMode={liquid:false,invest:false,paid:false,unpaid:false};
@@ -287,7 +287,10 @@ async function fetchSheetData(name){
 }
 async function loadAllData(){
   try{
-    const [liquid,invest,paid,unpaid]=await Promise.all([fetchSheetData('liquid'),fetchSheetData('invest'),fetchSheetData('paid'),fetchSheetData('unpaid')]);
+    const [liquid,invest,paid,unpaid,settings]=await Promise.all([fetchSheetData('liquid'),fetchSheetData('invest'),fetchSheetData('paid'),fetchSheetData('unpaid'),fetchSheetData('settings')]);
+    // 讀取年度目標
+    const goalRow=settings.find(r=>r.key==='goalVal');
+    if(goalRow&&goalRow.value) goalVal=parseInt(goalRow.value)||3000000;
     sampleData={};
     const proc=(rows,key)=>rows.forEach(r=>{
       let m=r.month;if(!m)return;
@@ -356,6 +359,15 @@ function showToast(msg,type='success'){
 }
 
 // ── 首頁 ──
+async function saveGoalToSheet(v){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/settings!B2?valueInputOption=RAW`;
+  await fetch(url,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${accessToken}`},
+    body:JSON.stringify({values:[[v]]})
+  });
+}
+
 function editGoal(){
   let inp=document.getElementById('goal-input');
   inp.value=goalVal;inp.type='number';inp.removeAttribute('readonly');inp.classList.add('editing');inp.focus();
@@ -370,6 +382,7 @@ function saveGoal(){
   document.getElementById('goal-save-btn').style.display='none';
   document.getElementById('target-asset').textContent=fmt(goalVal);
   refreshHomeSummary();
+  if(accessToken) saveGoalToSheet(v).catch(e=>console.error('目標儲存失敗',e));
 }
 function refreshHomeSummary(){
   document.getElementById('goal-input').value=goalVal.toLocaleString();
@@ -394,16 +407,342 @@ function setRange(type,n){
   document.querySelectorAll('#seg-'+type+' .seg-btn').forEach((b,i)=>{b.classList.toggle('active',[3,6,12][i]===n);});
   if(type==='paid')rebuildC1();else rebuildC2();
 }
-function getMonths(n){let e=ALL_MONTHS.length-1,st=Math.max(0,e-n+1);return ALL_MONTHS.slice(st,e+1);}
+function getMonths(n){
+  let sorted=[...ALL_MONTHS].sort();
+  let e=sorted.length-1,st=Math.max(0,e-n+1);
+  return sorted.slice(st,e+1);
+}
 function rebuildC1(){
   if(charts.c1)charts.c1.destroy();
-  let months=getMonths(ranges.paid),labels=months.map(mLabel),paid=months.map(m=>s((sampleData[m]||{}).paid,'amt'));
-  charts.c1=new Chart(document.getElementById('c1'),{type:'bar',data:{labels,datasets:[{data:paid,backgroundColor:'rgba(160,82,45,0.7)',borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'$'+(v/10000).toFixed(0)+'萬',font:{size:11},color:'#8a6a52'},grid:{color:'rgba(81,60,44,0.06)'},beginAtZero:true,border:{display:false}},x:{ticks:{font:{size:11},color:'#8a6a52',autoSkip:false},grid:{display:false},border:{display:false}}}}});
+  let months=getMonths(ranges.paid),labels=months.map(mLabel);
+  let paid=months.map(m=>s((sampleData[m]||{}).paid,'amt'));
+  console.log('C1 months:', months, 'paid:', paid);
+  charts.c1=new Chart(document.getElementById('c1'),{type:'bar',data:{labels,datasets:[{data:paid,backgroundColor:'rgba(160,82,45,0.7)',borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'
+
+// ── 分頁切換 ──
+function switchTab(i){
+  [0,1,2].forEach(j=>{
+    document.getElementById('page'+j).classList.toggle('active',j===i);
+    document.getElementById('nav'+j).classList.toggle('active',j===i);
+  });
+  if(i===1)renderDetail();
+  if(i===2)renderFormCat();
+}
+
+// ── 明細表 ──
+function updateDetailMonthSelector(){
+  document.getElementById('detail-month').innerHTML=ALL_MONTHS.slice().reverse().map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
+}
+function renderCatTabs(){
+  document.getElementById('cat-tabs').innerHTML=CATS.map(c=>`
+    <button class="cat-tab ${activeCat===c.key?'active':''}" style="${activeCat===c.key?`background:${c.color};color:#fff8f0;`:''}" onclick="switchCat('${c.key}',this)">${c.label}</button>`).join('');
+}
+function switchCat(key){
+  activeCat=key;renderCatTabs();renderDetail();
+}
+function renderDetail(){
+  let m=document.getElementById('detail-month').value;
+  if(!m||!sampleData[m])return;
+  let prev=prevMonth(m),d=sampleData[m],dp=prev&&sampleData[prev]?sampleData[prev]:{};
+  let c=CATS.find(x=>x.key===activeCat);
+  let rows=d[c.key]||[],total=s(rows,'amt'),ptotal=prev?s((dp[c.key]||[]),'amt'):null;
+  let html=`<div class="card"><div class="section-header"><span class="dot" style="background:${c.color}"></span>${c.label}${c.desc?'（'+c.desc+'）':''}</div>
+    <table class="data-table"><thead><tr><th>負責人</th><th>項目</th><th style="text-align:right">金額</th></tr></thead><tbody>`;
+  if(!rows.length)html+=`<tr><td colspan="3" style="color:#b8a090;font-size:12px;padding:8px;text-align:center;">尚無資料</td></tr>`;
+  rows.forEach(r=>{html+=`<tr><td>${r.who}</td><td>${r.item}</td><td class="amount">${fmt(r.amt)}</td></tr>`;});
+  html+=`</tbody></table><div class="section-total"><span>合計</span><strong>${fmt(total)}</strong></div><div style="text-align:right;margin-top:6px;">${growthTagDark(total,ptotal)}</div></div>`;
+  document.getElementById('detail-content').innerHTML=html;
+}
+
+// ── 每月記帳 ──
+function renderFormCatTabs(){
+  document.getElementById('form-cat-tabs').innerHTML=CATS.map(c=>`
+    <button class="cat-tab ${activeFormCat===c.key?'active':''}" style="${activeFormCat===c.key?`background:${c.color};color:#fff8f0;`:''}" onclick="switchFormCat('${c.key}')">${c.label}</button>`).join('');
+}
+function switchFormCat(key){
+  activeFormCat=key;
+  editMode[key]=false;
+  newRows[key]=[];
+  renderFormCatTabs();
+  renderFormCat();
+}
+
+function renderFormCat(){
+  let key=activeFormCat;
+  let c=CATS.find(x=>x.key===key);
+  let m=getInputMonth();
+  let existing=(sampleData[m]||{})[key]||[];
+  let isEdit=editMode[key];
+
+  let existingHtml='';
+  if(!existing.length){
+    existingHtml=`<p class="no-data">本月尚無資料</p>`;
+  } else if(isEdit){
+    existingHtml=editRows[key].map((r,i)=>`
+      <div class="edit-row">
+        <div class="edit-row-top">
+          <select onchange="editRows['${key}'][${i}].who=this.value">
+            <option value="子萱" ${r.who==='子萱'?'selected':''}>子萱</option>
+            <option value="佳韋" ${r.who==='佳韋'?'selected':''}>佳韋</option>
+            <option value="共同" ${r.who==='共同'?'selected':''}>共同</option>
+          </select>
+          <input list="el-${key}-${i}" placeholder="項目" value="${r.item}" oninput="editRows['${key}'][${i}].item=this.value">
+          <datalist id="el-${key}-${i}">${pastItems[key].map(x=>`<option value="${x}">`).join('')}</datalist>
+        </div>
+        <div class="edit-row-bot">
+          <input type="number" placeholder="金額" value="${r.amt}" oninput="editRows['${key}'][${i}].amt=this.value">
+          <button class="rm-btn" onclick="removeEditRow('${key}',${i})">✕</button>
+        </div>
+      </div>`).join('');
+  } else {
+    existingHtml=existing.map(r=>`
+      <div class="entry-row">
+        <span class="entry-who">${r.who}</span>
+        <span class="entry-item">${r.item}</span>
+        <span class="entry-amt">${fmt(r.amt)}</span>
+      </div>`).join('');
+  }
+
+  let newHtml='';
+  if(newRows[key].length){
+    newHtml=`<div class="new-section">`+newRows[key].map((r,i)=>`
+      <div class="edit-row">
+        <div class="edit-row-top">
+          <select onchange="newRows['${key}'][${i}].who=this.value">
+            <option value="子萱" ${r.who==='子萱'?'selected':''}>子萱</option>
+            <option value="佳韋" ${r.who==='佳韋'?'selected':''}>佳韋</option>
+            <option value="共同" ${r.who==='共同'?'selected':''}>共同</option>
+          </select>
+          <input list="nl-${key}-${i}" placeholder="項目" value="${r.item}" oninput="newRows['${key}'][${i}].item=this.value">
+          <datalist id="nl-${key}-${i}">${pastItems[key].map(x=>`<option value="${x}">`).join('')}</datalist>
+        </div>
+        <div class="edit-row-bot">
+          <input type="number" placeholder="金額" value="${r.amt}" oninput="newRows['${key}'][${i}].amt=this.value">
+          <button class="rm-btn" onclick="removeNewRow('${key}',${i})">✕</button>
+        </div>
+      </div>`).join('')+`</div>`;
+  }
+
+  let showSave=isEdit||newRows[key].length>0;
+
+  document.getElementById('form-cat-content').innerHTML=`
+    <div class="entry-card">
+      <div class="entry-header">
+        <div class="entry-title"><span class="dot" style="background:${c.color}"></span>${c.label}</div>
+        <div class="entry-actions">
+          ${existing.length?`<button class="edit-btn" onclick="toggleEdit('${key}')">${isEdit?'取消':'✎ 編輯'}</button>`:''}
+        </div>
+      </div>
+      ${existingHtml}
+      ${newHtml}
+      <button class="add-row-btn" onclick="addNewRow('${key}')">＋ 新增一筆</button>
+      ${showSave?`<button class="save-cat-btn" onclick="saveAll('${key}')">儲存</button>`:''}
+    </div>`;
+}
+
+function toggleEdit(key){
+  let m=getInputMonth();
+  let existing=(sampleData[m]||{})[key]||[];
+  if(!editMode[key]) editRows[key]=existing.map(r=>({...r}));
+  editMode[key]=!editMode[key];
+  renderFormCat();
+}
+function removeEditRow(key,i){editRows[key].splice(i,1);renderFormCat();}
+function addNewRow(key){newRows[key].push({who:'子萱',item:'',amt:''});renderFormCat();}
+function removeNewRow(key,i){newRows[key].splice(i,1);renderFormCat();}
+
+async function saveAll(key){
+  if(!accessToken){showToast('請先登入','error');return;}
+  let m=getInputMonth();
+  try{
+    // 新增筆數
+    let validNew=newRows[key].filter(r=>r.item&&r.amt).map(r=>({month:m,who:r.who,item:r.item,amt:r.amt}));
+    if(validNew.length) await appendToSheet(key,validNew);
+    // 更新記憶體
+    if(!sampleData[m]) sampleData[m]={liquid:[],invest:[],paid:[],unpaid:[]};
+    if(editMode[key]) sampleData[m][key]=editRows[key].filter(r=>r.item);
+    if(validNew.length) sampleData[m][key]=[...(sampleData[m][key]||[]),...validNew];
+    editMode[key]=false;
+    newRows[key]=[];
+    if(!ALL_MONTHS.includes(m)){ALL_MONTHS.push(m);ALL_MONTHS.sort();}
+    showToast('✓ 儲存成功！');
+    renderFormCat();
+    refreshHomeSummary();
+    rebuildC1();rebuildC2();
+  }catch(e){
+    showToast('❌ 儲存失敗：'+e.message,'error');
+  }
+}
+</script>
+</body>
+</html>
++(v/10000).toFixed(0)+'萬',font:{size:11},color:'#8a6a52'},grid:{color:'rgba(81,60,44,0.06)'},beginAtZero:true,border:{display:false}},x:{ticks:{font:{size:11},color:'#8a6a52',autoSkip:false,maxRotation:45},grid:{display:false},border:{display:false}}}}});
 }
 function rebuildC2(){
   if(charts.c2)charts.c2.destroy();
-  let months=getMonths(ranges.invest),labels=months.map(mLabel),invest=months.map(m=>s((sampleData[m]||{}).invest,'amt'));
-  charts.c2=new Chart(document.getElementById('c2'),{type:'line',data:{labels,datasets:[{data:invest,borderColor:'#869D96',backgroundColor:'rgba(134,157,150,0.1)',tension:0.4,fill:true,borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#869D96'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'$'+(v/10000).toFixed(0)+'萬',font:{size:11},color:'#8a6a52'},grid:{color:'rgba(81,60,44,0.06)'},border:{display:false}},x:{ticks:{font:{size:11},color:'#8a6a52',autoSkip:false},grid:{display:false},border:{display:false}}}}});
+  let months=getMonths(ranges.invest),labels=months.map(mLabel);
+  let invest=months.map(m=>s((sampleData[m]||{}).invest,'amt'));
+  console.log('C2 months:', months, 'invest:', invest);
+  charts.c2=new Chart(document.getElementById('c2'),{type:'line',data:{labels,datasets:[{data:invest,borderColor:'#869D96',backgroundColor:'rgba(134,157,150,0.1)',tension:0.4,fill:true,borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#869D96'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'
+
+// ── 分頁切換 ──
+function switchTab(i){
+  [0,1,2].forEach(j=>{
+    document.getElementById('page'+j).classList.toggle('active',j===i);
+    document.getElementById('nav'+j).classList.toggle('active',j===i);
+  });
+  if(i===1)renderDetail();
+  if(i===2)renderFormCat();
+}
+
+// ── 明細表 ──
+function updateDetailMonthSelector(){
+  document.getElementById('detail-month').innerHTML=ALL_MONTHS.slice().reverse().map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
+}
+function renderCatTabs(){
+  document.getElementById('cat-tabs').innerHTML=CATS.map(c=>`
+    <button class="cat-tab ${activeCat===c.key?'active':''}" style="${activeCat===c.key?`background:${c.color};color:#fff8f0;`:''}" onclick="switchCat('${c.key}',this)">${c.label}</button>`).join('');
+}
+function switchCat(key){
+  activeCat=key;renderCatTabs();renderDetail();
+}
+function renderDetail(){
+  let m=document.getElementById('detail-month').value;
+  if(!m||!sampleData[m])return;
+  let prev=prevMonth(m),d=sampleData[m],dp=prev&&sampleData[prev]?sampleData[prev]:{};
+  let c=CATS.find(x=>x.key===activeCat);
+  let rows=d[c.key]||[],total=s(rows,'amt'),ptotal=prev?s((dp[c.key]||[]),'amt'):null;
+  let html=`<div class="card"><div class="section-header"><span class="dot" style="background:${c.color}"></span>${c.label}${c.desc?'（'+c.desc+'）':''}</div>
+    <table class="data-table"><thead><tr><th>負責人</th><th>項目</th><th style="text-align:right">金額</th></tr></thead><tbody>`;
+  if(!rows.length)html+=`<tr><td colspan="3" style="color:#b8a090;font-size:12px;padding:8px;text-align:center;">尚無資料</td></tr>`;
+  rows.forEach(r=>{html+=`<tr><td>${r.who}</td><td>${r.item}</td><td class="amount">${fmt(r.amt)}</td></tr>`;});
+  html+=`</tbody></table><div class="section-total"><span>合計</span><strong>${fmt(total)}</strong></div><div style="text-align:right;margin-top:6px;">${growthTagDark(total,ptotal)}</div></div>`;
+  document.getElementById('detail-content').innerHTML=html;
+}
+
+// ── 每月記帳 ──
+function renderFormCatTabs(){
+  document.getElementById('form-cat-tabs').innerHTML=CATS.map(c=>`
+    <button class="cat-tab ${activeFormCat===c.key?'active':''}" style="${activeFormCat===c.key?`background:${c.color};color:#fff8f0;`:''}" onclick="switchFormCat('${c.key}')">${c.label}</button>`).join('');
+}
+function switchFormCat(key){
+  activeFormCat=key;
+  editMode[key]=false;
+  newRows[key]=[];
+  renderFormCatTabs();
+  renderFormCat();
+}
+
+function renderFormCat(){
+  let key=activeFormCat;
+  let c=CATS.find(x=>x.key===key);
+  let m=getInputMonth();
+  let existing=(sampleData[m]||{})[key]||[];
+  let isEdit=editMode[key];
+
+  let existingHtml='';
+  if(!existing.length){
+    existingHtml=`<p class="no-data">本月尚無資料</p>`;
+  } else if(isEdit){
+    existingHtml=editRows[key].map((r,i)=>`
+      <div class="edit-row">
+        <div class="edit-row-top">
+          <select onchange="editRows['${key}'][${i}].who=this.value">
+            <option value="子萱" ${r.who==='子萱'?'selected':''}>子萱</option>
+            <option value="佳韋" ${r.who==='佳韋'?'selected':''}>佳韋</option>
+            <option value="共同" ${r.who==='共同'?'selected':''}>共同</option>
+          </select>
+          <input list="el-${key}-${i}" placeholder="項目" value="${r.item}" oninput="editRows['${key}'][${i}].item=this.value">
+          <datalist id="el-${key}-${i}">${pastItems[key].map(x=>`<option value="${x}">`).join('')}</datalist>
+        </div>
+        <div class="edit-row-bot">
+          <input type="number" placeholder="金額" value="${r.amt}" oninput="editRows['${key}'][${i}].amt=this.value">
+          <button class="rm-btn" onclick="removeEditRow('${key}',${i})">✕</button>
+        </div>
+      </div>`).join('');
+  } else {
+    existingHtml=existing.map(r=>`
+      <div class="entry-row">
+        <span class="entry-who">${r.who}</span>
+        <span class="entry-item">${r.item}</span>
+        <span class="entry-amt">${fmt(r.amt)}</span>
+      </div>`).join('');
+  }
+
+  let newHtml='';
+  if(newRows[key].length){
+    newHtml=`<div class="new-section">`+newRows[key].map((r,i)=>`
+      <div class="edit-row">
+        <div class="edit-row-top">
+          <select onchange="newRows['${key}'][${i}].who=this.value">
+            <option value="子萱" ${r.who==='子萱'?'selected':''}>子萱</option>
+            <option value="佳韋" ${r.who==='佳韋'?'selected':''}>佳韋</option>
+            <option value="共同" ${r.who==='共同'?'selected':''}>共同</option>
+          </select>
+          <input list="nl-${key}-${i}" placeholder="項目" value="${r.item}" oninput="newRows['${key}'][${i}].item=this.value">
+          <datalist id="nl-${key}-${i}">${pastItems[key].map(x=>`<option value="${x}">`).join('')}</datalist>
+        </div>
+        <div class="edit-row-bot">
+          <input type="number" placeholder="金額" value="${r.amt}" oninput="newRows['${key}'][${i}].amt=this.value">
+          <button class="rm-btn" onclick="removeNewRow('${key}',${i})">✕</button>
+        </div>
+      </div>`).join('')+`</div>`;
+  }
+
+  let showSave=isEdit||newRows[key].length>0;
+
+  document.getElementById('form-cat-content').innerHTML=`
+    <div class="entry-card">
+      <div class="entry-header">
+        <div class="entry-title"><span class="dot" style="background:${c.color}"></span>${c.label}</div>
+        <div class="entry-actions">
+          ${existing.length?`<button class="edit-btn" onclick="toggleEdit('${key}')">${isEdit?'取消':'✎ 編輯'}</button>`:''}
+        </div>
+      </div>
+      ${existingHtml}
+      ${newHtml}
+      <button class="add-row-btn" onclick="addNewRow('${key}')">＋ 新增一筆</button>
+      ${showSave?`<button class="save-cat-btn" onclick="saveAll('${key}')">儲存</button>`:''}
+    </div>`;
+}
+
+function toggleEdit(key){
+  let m=getInputMonth();
+  let existing=(sampleData[m]||{})[key]||[];
+  if(!editMode[key]) editRows[key]=existing.map(r=>({...r}));
+  editMode[key]=!editMode[key];
+  renderFormCat();
+}
+function removeEditRow(key,i){editRows[key].splice(i,1);renderFormCat();}
+function addNewRow(key){newRows[key].push({who:'子萱',item:'',amt:''});renderFormCat();}
+function removeNewRow(key,i){newRows[key].splice(i,1);renderFormCat();}
+
+async function saveAll(key){
+  if(!accessToken){showToast('請先登入','error');return;}
+  let m=getInputMonth();
+  try{
+    // 新增筆數
+    let validNew=newRows[key].filter(r=>r.item&&r.amt).map(r=>({month:m,who:r.who,item:r.item,amt:r.amt}));
+    if(validNew.length) await appendToSheet(key,validNew);
+    // 更新記憶體
+    if(!sampleData[m]) sampleData[m]={liquid:[],invest:[],paid:[],unpaid:[]};
+    if(editMode[key]) sampleData[m][key]=editRows[key].filter(r=>r.item);
+    if(validNew.length) sampleData[m][key]=[...(sampleData[m][key]||[]),...validNew];
+    editMode[key]=false;
+    newRows[key]=[];
+    if(!ALL_MONTHS.includes(m)){ALL_MONTHS.push(m);ALL_MONTHS.sort();}
+    showToast('✓ 儲存成功！');
+    renderFormCat();
+    refreshHomeSummary();
+    rebuildC1();rebuildC2();
+  }catch(e){
+    showToast('❌ 儲存失敗：'+e.message,'error');
+  }
+}
+</script>
+</body>
+</html>
++(v/10000).toFixed(0)+'萬',font:{size:11},color:'#8a6a52'},grid:{color:'rgba(81,60,44,0.06)'},border:{display:false}},x:{ticks:{font:{size:11},color:'#8a6a52',autoSkip:false,maxRotation:45},grid:{display:false},border:{display:false}}}}});
 }
 
 // ── 分頁切換 ──
