@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>家庭財務總覽</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:system-ui,-apple-system,sans-serif;background:#f5ece0;color:#513C2C;font-size:14px;}
@@ -232,12 +232,32 @@ let editRows={liquid:[],invest:[],paid:[],unpaid:[]};
 let newRows={liquid:[],invest:[],paid:[],unpaid:[]};
 
 // ── Google 登入 ──
-window.onGoogleLibraryLoad=()=>{
+// 初始化 Google 登入
+function initGoogleLogin(){
   if(handleRedirectToken()) return;
-  google.accounts.id.initialize({client_id:CLIENT_ID,callback:handleCredential,auto_select:true});
-  google.accounts.id.renderButton(document.getElementById('g_id_signin'),{theme:'outline',size:'large',text:'signin_with',locale:'zh-TW'});
-  google.accounts.id.prompt();
-};
+  google.accounts.id.initialize({client_id:CLIENT_ID,callback:handleCredential,auto_select:false});
+  google.accounts.id.renderButton(
+    document.getElementById('g_id_signin'),
+    {theme:'outline',size:'large',text:'signin_with',locale:'zh-TW',width:280}
+  );
+}
+
+window.addEventListener('load', ()=>{
+  if(typeof google !== 'undefined' && google.accounts){
+    initGoogleLogin();
+  } else {
+    // 若 GSI 還沒載入完成，等待後再試
+    let tries=0;
+    let timer=setInterval(()=>{
+      tries++;
+      if(typeof google !== 'undefined' && google.accounts){
+        clearInterval(timer);
+        initGoogleLogin();
+      }
+      if(tries>20) clearInterval(timer);
+    },300);
+  }
+});
 function handleCredential(r){
   const p=JSON.parse(atob(r.credential.split('.')[1]));
   currentUser={name:p.name,email:p.email};
